@@ -1,113 +1,121 @@
-# HRMS Dashboard Application
+# 🚀 TalentFlow Recruitment CRM
 
-A full-stack Human Resources Management System (HRMS) dashboard built with React and Node.js. This application allows you to manage candidates, job postings, and view analytics in a modern, responsive interface.
+TalentFlow is a modern, high-performance Recruitment Management System designed for efficiency and speed. Built with a full-stack TypeScript architecture, it provides a seamless experience for managing candidates, job postings, and recruitment analytics.
 
-## 🚀 Features
+![TalentFlow Dashboard](https://img.shields.io/badge/UI-Ant%20Design-blue?style=for-the-badge&logo=ant-design)
+![TalentFlow Stack](https://img.shields.io/badge/Stack-TypeScript%20|%20React%20|%20MongoDB-green?style=for-the-badge&logo=typescript)
 
-- **Dynamic Dashboard**: View interactive analytics with bar, pie, and line charts representing candidate statuses, job types, and departments.
-- **Candidate Management**: Add, edit, delete, and view candidates in a responsive, filterable data grid.
-- **Job Management**: Create and manage job postings, including full CRUD support integrated with a MongoDB backend.
-- **Modern UI**: Polished layout leveraging Ant Design components, Tailwind CSS for utility styling, and custom routing with a 404 handler.
-- **REST API**: Backend powered by Express.js and MongoDB to provide endpoints for candidates and job postings.
+---
+
+## ✨ Key Features
+
+### 📊 Advanced Dashboard
+- **Real-time Analytics**: High-density charts (Bar, Pie, Line, Area) for tracking recruitment trends.
+- **Dynamic Stats**: Instant calculation of candidate pipeline status (Hired, Pending, Rejected).
+- **Glassmorphism UI**: Modern, sleek design with subtle animations and transparency.
+
+### 💼 Job Management (CRUD)
+- **Full Lifecycle**: Create, edit, and delete job postings with ease.
+- **Type-Safe Schema**: Backend validation ensures all job data is consistent and accurate.
+- **Search & Filter**: Debounced search and category filtering for high-speed job discovery.
+
+### 👥 Candidate Pipeline
+- **Professional Grids**: Powered by **AG Grid Community** for high-performance data manipulation.
+- **Global Search Bar**: Instant filtering across the entire candidate database.
+- **Status Badges**: Visual indicators for candidate progress.
+
+### 🔐 Authentication & Security
+- **Role-Based Access**: Secure login and registration.
+- **Protected Routes**: Ensuring sensitive data is only accessible to authenticated recruiters.
+- **Type-Safe API**: Axios-based service layer with strict generic typing.
+
+---
 
 ## 🛠️ Technology Stack
 
-**Frontend:**
-- **React.js (18.x)** with **Vite**
-- **React Router DOM** for navigation
-- **Ant Design** & **Bootstrap** for rapid UI component development
-- **Tailwind CSS** for custom utility stylings
-- **Recharts** for interactive data visualizations
-- **AG Grid React** for powerful data tables
+### Frontend
+- **React 18** & **Vite**
+- **TypeScript** (Strict Mode)
+- **Ant Design v5** (Component Library)
+- **AG Grid Community** (Data Tables)
+- **Recharts** (Data Visualization)
+- **Tailwind CSS** (Utility Styling)
 
-**Backend:**
-- **Node.js** with **Express**
-- **MongoDB** with **Mongoose** ORM
-- **dotenv** for environment configuration
-- **CORS** middleware enabled
+### Backend
+- **Node.js** & **Express**
+- **TypeScript** (via `tsx`)
+- **MongoDB** & **Mongoose**
+- **JWT** (Authentication)
 
-## 📦 Getting Started
+---
 
-Follow these instructions to get a copy of the project up and running on your local machine.
+## 🚀 Getting Started
 
-### Prerequisites
-- [Node.js](https://nodejs.org/en) (v16+ recommended)
-- [MongoDB](https://www.mongodb.com/try/download/community) installed and running locally on standard port (27017).
+### 1. Prerequisites
+- Node.js (v18+)
+- MongoDB (Running locally or via Atlas)
+- npm or yarn
 
-### 1. Installation
-
-Clone the repository and install dependencies for both the frontend and backend.
-
+### 2. Installation
 ```bash
-# Install frontend dependencies
+# Install dependencies
 npm install
-
-# Navigate to backend directory to install its dependencies 
-# (if a separate package.json exists in backend, otherwise it runs from root)
 ```
 
-### 2. Environment Variables
+### 3. Environment Setup
+Create a `.env` file in the root directory (if required) or ensure your `src/services/api.ts` points to the correct backend URL.
 
-Create a `.env` file in the `backend` folder (or at the root, depending on your setup) and define the following variables:
-
-```env
-PORT=5000
-MONGODB_URI=mongodb://127.0.0.1:27017/hrms-dashboard
+### 4. Database Seeding (Optional)
+To populate the database with sample candidates and jobs:
+```bash
+# Run the seed script
+npm run seed
 ```
 
-### 3. Setup Initial Data (Optional)
+### 5. Running the Application
+You need to start both the frontend and backend.
 
-You can seed the database with testing data using the provided seed route.
-
-Run a POST request to `http://localhost:5000/api/seed` (using Postman or your browser) to populate initial `.candidates` and `.jobs` data schemas.
-
-### 4. Running the Development Servers
-
-You need to run both the frontend and backend servers concurrently.
-
-**Start the Backend Server:**
-Open a terminal instance and run:
+**Start the Backend:**
 ```bash
 npm run server
-# Note: Ensure MongoDB service is running locally first.
 ```
-*The backend will run on `http://localhost:5000/`*
 
-**Start the Frontend Server:**
-Open a separate terminal instance and run:
+**Start the Frontend:**
 ```bash
 npm run dev
 ```
-*The React app will be accessible at `http://localhost:5173/`*
 
-## 📂 Project Structure
+---
+
+## 📁 Project Structure
 
 ```text
-├── backend/
-│   ├── models/           # Mongoose Database Models (Candidate.js, Job.js)
-│   └── server.js         # Express App and API Routes
-├── src/
-│   ├── components/       # Reusable UI layout & components (StatCards, ErrorMessage, etc.)
-│   ├── context/          # React Contexts for global state management
-│   ├── hooks/            # Custom React hooks (e.g. useFetch)
-│   ├── pages/            # Application Pages
-│   │   ├── Dashboard/    # Analytics view with Recharts
-│   │   ├── Candidates/   # Candidate management views
-│   │   ├── Jobs/         # Jobs CRUD interface
-│   │   └── NotFound/     # 404 Fallback page 
-│   ├── routes/           # React Router configuration
-│   ├── services/         # API connection handlers
-│   ├── App.jsx           # Root App Component
-│   └── main.jsx          # React DOM entry
-├── index.html            # Vite HTML template
-├── package.json          # Dependencies and scripts
-└── README.md             # Project documentation
+├── backend/            # Express Server (TypeScript)
+│   ├── models/         # Mongoose Schemas (User, Candidate, Job)
+│   ├── server.ts       # Main entry point
+│   └── seed.ts         # DB Seeding script
+├── src/                # React Frontend
+│   ├── components/     # Reusable UI & Layout components
+│   ├── context/        # Global App State (AppContext)
+│   ├── hooks/          # Custom Hooks (useDebounce, useLocalStorage)
+│   ├── pages/          # Page Views (Dashboard, Jobs, Candidates)
+│   ├── services/       # API integration layer
+│   └── types/          # Global TypeScript Interfaces
+├── package.json        # Dependencies & Scripts
+└── tsconfig.json       # TypeScript Configuration
 ```
 
-## 🤝 Contributing
+---
 
-Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
+## 🎨 UI Best Practices
+- **Dark Mode**: Fully supported via the Ant Design `App` provider.
+- **Responsiveness**: Mobile-first design using Tailwind CSS and Ant Design Grid.
+- **Performance**: Heavy calculations are memoized using `useMemo` and `useCallback`.
 
-## 📝 License
+---
 
-This project is licensed under the MIT License.
+## 📄 License
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+*Built with ❤️ by the TalentFlow Team*

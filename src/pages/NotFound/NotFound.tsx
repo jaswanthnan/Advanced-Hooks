@@ -1,8 +1,13 @@
+import React from 'react';
 import { Result, Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import { HomeOutlined } from "@ant-design/icons";
  
-const NotFound = ({ darkMode = false }) => {
+interface NotFoundProps {
+  darkMode?: boolean;
+}
+
+const NotFound: React.FC<NotFoundProps> = ({ darkMode = false }) => {
   const navigate = useNavigate();
  
   const bg = darkMode ? "#0f172a" : "#f8fafc";

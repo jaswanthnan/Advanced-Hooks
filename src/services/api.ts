@@ -1,7 +1,7 @@
 const BASE_URL = 'http://localhost:5000/api';
 
 export const api = {
-  get: async (endpoint) => {
+  get: async <T>(endpoint: string): Promise<T> => {
     const response = await fetch(`${BASE_URL}${endpoint}`);
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: response.statusText }));
@@ -9,7 +9,7 @@ export const api = {
     }
     return response.json();
   },
-  post: async (endpoint, data) => {
+  post: async <T>(endpoint: string, data: any): Promise<T> => {
     const response = await fetch(`${BASE_URL}${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -21,7 +21,7 @@ export const api = {
     }
     return response.json();
   },
-  put: async (endpoint, data) => {
+  put: async <T>(endpoint: string, data: any): Promise<T> => {
     const response = await fetch(`${BASE_URL}${endpoint}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -33,7 +33,7 @@ export const api = {
     }
     return response.json();
   },
-  delete: async (endpoint) => {
+  delete: async <T>(endpoint: string): Promise<T> => {
     const response = await fetch(`${BASE_URL}${endpoint}`, {
       method: 'DELETE',
     });

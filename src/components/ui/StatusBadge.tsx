@@ -1,4 +1,8 @@
-export const StatusBadge = ({ status }) => {
+interface StatusBadgeProps {
+  status: string;
+}
+
+export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
   let colorClasses = 'bg-gray-100 text-gray-800';
   
   if (status?.toLowerCase() === 'active' || status?.toLowerCase() === 'hired') {
