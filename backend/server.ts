@@ -66,18 +66,40 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
 app.get('/api/candidates', async (req: Request, res: Response) => {
   try {
     const q = String(req.query.q || req.query.search || '').trim();
-    console.log(`[DEBUG] Received search query: "${q}"`);
+    const status = String(req.query.status || '');
+    const experience = String(req.query.experience || '');
     
-    let query = {};
+    console.log(`[DEBUG] Filters - Search: "${q}", Status: "${status}", Exp: "${experience}"`);
+    
+    let query: any = {};
+    const conditions: any[] = [];
+
+    // Search query logic
     if (q) {
-      const regex = new RegExp(q, 'i');
-      query = {
+      conditions.push({
         $or: [
-          { name: regex },
-          { email: regex },
-          { role: regex }
+          { name: new RegExp(q, 'i') },
+          { email: new RegExp(q, 'i') },
+          { role: new RegExp(q, 'i') }
         ]
-      };
+      });
+    }
+
+    // Status filter logic (comma-separated values)
+    if (status) {
+      conditions.push({ status: { $in: status.split(',') } });
+    }
+
+    // Experience filter logic
+    if (experience) {
+      const expArray = experience.split(',');
+      conditions.push({ 
+        $or: expArray.map(exp => ({ experience: new RegExp(exp, 'i') }))
+      });
+    }
+
+    if (conditions.length > 0) {
+      query = { $and: conditions };
     }
 
     console.log(`[DEBUG] MongoDB Query: ${JSON.stringify(query)}`);

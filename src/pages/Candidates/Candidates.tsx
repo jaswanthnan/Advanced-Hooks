@@ -56,8 +56,17 @@ const Candidates: React.FC = () => {
   // 3. useDebounce
   const debouncedSearch = useDebounce<string>(searchTerm, 300);
 
-  // 4. useFetch with AbortController and debouncedSearch in URL
-  const { data, loading, error, refetch } = useFetch<Candidate[]>(`http://localhost:5000/api/candidates?q=${debouncedSearch}`);
+  // Convert active filters to query string
+  const filterParams = useMemo(() => {
+    const params = new URLSearchParams();
+    if (debouncedSearch) params.append('q', debouncedSearch);
+    if (activeFilters.status?.length) params.append('status', activeFilters.status.join(','));
+    if (activeFilters.experience?.length) params.append('experience', activeFilters.experience.join(','));
+    return params.toString();
+  }, [debouncedSearch, activeFilters]);
+
+  // 4. useFetch with full filter parameters
+  const { data, loading, error, refetch } = useFetch<Candidate[]>(`http://localhost:5000/api/candidates?${filterParams}`);
 
   useEffect(() => {
     if (error) message.error("Failed to fetch candidates");
