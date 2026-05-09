@@ -74,8 +74,29 @@ const AgGridTable = forwardRef<AgGridTableHandle, AgGridTableProps>(({
 
   const internalOnGridReady = useCallback((params: GridReadyEvent) => {
     params.api.setGridOption("domLayout", "autoHeight");
+    
+    // Restore column state from localStorage
+    const savedState = localStorage.getItem(`ag-grid-state-${gridId}`);
+    if (savedState) {
+      try {
+        const state = JSON.parse(savedState);
+        params.api.applyColumnState({ state, applyOrder: true });
+        console.log(`%c [AgGridTable] Restored state for ${gridId} `, 'background: #0ea5e9; color: white; padding: 2px 4px; border-radius: 4px;');
+      } catch (e) {
+        console.error('Failed to restore grid state', e);
+      }
+    }
+
     if (onGridReady) onGridReady(params);
-  }, [onGridReady]);
+  }, [onGridReady, gridId]);
+
+  const onColumnChangedInternal = useCallback(() => {
+    if (gridRef.current?.api) {
+      const columnState = gridRef.current.api.getColumnState();
+      localStorage.setItem(`ag-grid-state-${gridId}`, JSON.stringify(columnState));
+      console.log(`%c [AgGridTable] Saved state for ${gridId} `, 'background: #6366f1; color: white; padding: 2px 4px; border-radius: 4px;');
+    }
+  }, [gridId]);
 
   const themeClass = props.theme || "ag-theme-alpine";
   
@@ -93,9 +114,9 @@ const AgGridTable = forwardRef<AgGridTableHandle, AgGridTableProps>(({
         rowData={rowData}
         columnDefs={columnDefs}
         onGridReady={internalOnGridReady}
-        onColumnVisible={onColumnChanged as any}
-        onColumnResized={onColumnChanged as any}
-        onColumnMoved={onColumnChanged as any}
+        onColumnVisible={onColumnChangedInternal}
+        onColumnResized={onColumnChangedInternal}
+        onColumnMoved={onColumnChangedInternal}
         domLayout="autoHeight"
         rowSelection={rowSelectionConfig}
         pagination={true}

@@ -14,6 +14,7 @@ interface JobCardProps {
 }
 
 const JobCard: React.FC<JobCardProps> = ({ job, onApply, onEdit, onDelete }) => {
+  console.log(`%c [React.memo] Rendering JobCard: ${job.title} `, 'color: #10b981; font-style: italic;');
   const cardRef = useRef<HTMLDivElement>(null);
   const isVisible = useIntersectionObserver(cardRef, { threshold: 0.1 });
 

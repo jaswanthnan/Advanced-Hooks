@@ -67,6 +67,7 @@ const Login: React.FC = () => {
                 prefix={<UserOutlined className="text-slate-400" />} 
                 placeholder="Username or Email" 
                 className="rounded-xl h-12"
+                autoComplete="username"
               />
             </Form.Item>
 
@@ -78,6 +79,7 @@ const Login: React.FC = () => {
                 prefix={<LockOutlined className="text-slate-400" />} 
                 placeholder="Password" 
                 className="rounded-xl h-12"
+                autoComplete="current-password"
               />
             </Form.Item>
 
