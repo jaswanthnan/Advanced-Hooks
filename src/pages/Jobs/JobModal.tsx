@@ -109,7 +109,7 @@ const JobModal = forwardRef<JobModalRef, JobModalProps>(({ onSuccess }, ref) => 
         open={isPostVisible}
         onCancel={() => setIsPostVisible(false)}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
         className="rounded-2xl"
       >
         <Form form={postForm} layout="vertical" onFinish={onPostFinish} className="mt-6" requiredMark={false}>
