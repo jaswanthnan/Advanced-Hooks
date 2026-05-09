@@ -1,9 +1,10 @@
-import React, { useEffect, useRef, useMemo, useCallback, useReducer, Profiler } from 'react';
+import React, { useEffect, useRef, useMemo, useCallback, useReducer, Profiler, useState } from 'react';
 import { Tag, Avatar, Modal, Form, Input, Select, Button, Space, Typography, App } from 'antd';
 import { UserOutlined, EditOutlined, DeleteOutlined, DownloadOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons';
 import { api } from '../../services/api';
 import AgGridTable, { AgGridTableHandle } from '../../components/common/AgGridTable';
 import { useDebounce, useFetch, useLocalStorage } from '../../hooks';
+import { FilterPanel } from '../../components/patterns/FilterPanel';
 import { Candidate } from '../../types';
 import { ColDef } from 'ag-grid-community';
 
@@ -50,6 +51,7 @@ const Candidates: React.FC = () => {
 
   // 2. useLocalStorage for search persistence
   const [searchTerm, setSearchTerm] = useLocalStorage<string>('candidates_search', '');
+  const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({});
   
   // 3. useDebounce
   const debouncedSearch = useDebounce<string>(searchTerm, 300);
@@ -109,19 +111,28 @@ const Candidates: React.FC = () => {
     gridRef.current?.exportData('candidates_report.csv');
   }, []);
 
-  // 5. useMemo for local filtering (Fallback and performance optimization)
+  // 5. useMemo for local filtering
   const filteredCandidates = useMemo(() => {
     if (!data) return [];
     console.time('Filtering Candidates');
     const q = searchTerm.toLowerCase();
-    const filtered = data.filter(c => 
-      (c.name || '').toLowerCase().includes(q) ||
-      (c.email || '').toLowerCase().includes(q) ||
-      (c.role || '').toLowerCase().includes(q)
-    );
+    
+    const filtered = data.filter(c => {
+      // Search matching
+      const matchesSearch = (c.name || '').toLowerCase().includes(q) ||
+                            (c.email || '').toLowerCase().includes(q) ||
+                            (c.role || '').toLowerCase().includes(q);
+      
+      // Filter matching (Compound logic)
+      const matchesStatus = !activeFilters.status?.length || activeFilters.status.includes(c.status);
+      const matchesExperience = !activeFilters.experience?.length || activeFilters.experience.some(exp => (c.experience || '').includes(exp));
+
+      return matchesSearch && matchesStatus && matchesExperience;
+    });
+    
     console.timeEnd('Filtering Candidates');
     return filtered;
-  }, [data, searchTerm]);
+  }, [data, searchTerm, activeFilters]);
 
   // 6. useMemo for expensive column definitions
   const columnDefs = useMemo<ColDef[]>(() => [
@@ -185,15 +196,37 @@ const Candidates: React.FC = () => {
           </Space>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-          <AgGridTable 
-            ref={gridRef}
-            gridId="candidates_grid"
-            rowData={filteredCandidates}
-            columnDefs={columnDefs}
-            pagination={true}
-            paginationPageSize={10}
-          />
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-1">
+            <FilterPanel onChange={setActiveFilters}>
+              <FilterPanel.Group name="status" title="Status">
+                <FilterPanel.Item group="status" value="Hired">Hired</FilterPanel.Item>
+                <FilterPanel.Item group="status" value="In Review">In Review</FilterPanel.Item>
+                <FilterPanel.Item group="status" value="Pending">Pending</FilterPanel.Item>
+                <FilterPanel.Item group="status" value="Rejected">Rejected</FilterPanel.Item>
+              </FilterPanel.Group>
+
+              <FilterPanel.Group name="experience" title="Experience Level">
+                <FilterPanel.Item group="experience" value="Entry">Entry</FilterPanel.Item>
+                <FilterPanel.Item group="experience" value="Junior">Junior</FilterPanel.Item>
+                <FilterPanel.Item group="experience" value="Senior">Senior</FilterPanel.Item>
+                <FilterPanel.Item group="experience" value="Expert">Expert</FilterPanel.Item>
+              </FilterPanel.Group>
+            </FilterPanel>
+          </div>
+
+          <div className="lg:col-span-3 space-y-6">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+              <AgGridTable 
+                ref={gridRef}
+                gridId="candidates_grid"
+                rowData={filteredCandidates}
+                columnDefs={columnDefs}
+                pagination={true}
+                paginationPageSize={10}
+              />
+            </div>
+          </div>
         </div>
 
         <Modal

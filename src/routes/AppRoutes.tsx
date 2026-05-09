@@ -9,6 +9,7 @@ import Login from '../pages/Login/Login';
 import Register from '../pages/Register/Register';
 import ProtectedRoute from './ProtectedRoute';
 import NotFound from '../pages/NotFound/NotFound';
+import PatternsDemo from '../pages/PatternsDemo';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -40,6 +41,7 @@ const AppRoutes: React.FC = () => {
           
           {/* Unprotected but contains protected actions inside */}
           <Route path="jobs" element={<Jobs />} />
+          <Route path="patterns" element={<PatternsDemo />} />
         </Route>
         
         {/* Catch-All 404 Route */}
