@@ -5,6 +5,7 @@ import { Tabs } from '../components/patterns/TabsContext';
 import { AIPromptBuilder } from '../components/patterns/AIPromptBuilder';
 import { MouseTracker, Counter, InputPatterns } from '../components/patterns/MiscPatterns';
 import { UserProfileHOC, UserProfileHook } from '../components/patterns/HocVsHooks';
+import { StateManagementOverview } from '../components/patterns/StateManagement';
 
 const PatternsDemo: React.FC = () => {
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({});
@@ -181,7 +182,7 @@ const PatternsDemo: React.FC = () => {
         </section>
 
         {/* 6. Evolution: HOCs to Hooks */}
-        <section className="space-y-12 pb-20">
+        <section className="space-y-12">
           <div className="border-l-8 border-purple-500 pl-8">
             <h2 className="text-3xl font-black text-slate-900 tracking-tighter">6. Evolution: HOCs to Hooks</h2>
             <p className="text-slate-500 mt-2 text-lg">Tracing the transition from component wrapping to functional composition.</p>
@@ -201,6 +202,15 @@ const PatternsDemo: React.FC = () => {
               <UserProfileHook />
             </div>
           </div>
+        </section>
+
+        {/* 7. State Management Architecture */}
+        <section className="space-y-12 pb-20">
+          <div className="border-l-8 border-teal-500 pl-8">
+            <h2 className="text-3xl font-black text-slate-900 tracking-tighter">7. State Management Architecture</h2>
+            <p className="text-slate-500 mt-2 text-lg">Comparing Context API, Zustand, and Redux Toolkit.</p>
+          </div>
+          <StateManagementOverview />
         </section>
 
       </div>

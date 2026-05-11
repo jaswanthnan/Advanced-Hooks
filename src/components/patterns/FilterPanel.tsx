@@ -17,6 +17,7 @@ function useFilters() {
 
 interface FilterPanelProps {
   children: ReactNode;
+  value?: Record<string, string[]>;
   onChange?: (filters: Record<string, string[]>) => void;
 }
 
@@ -24,42 +25,38 @@ export const FilterPanel: React.FC<FilterPanelProps> & {
   Group: React.FC<{ name: string; title: string; children: ReactNode }>;
   Item: React.FC<{ group: string; value: string; children: ReactNode }>;
   ClearButton: React.FC<{ group?: string; children: ReactNode }>;
-} = ({ children, onChange }) => {
-  const [filters, setFilters] = useState<Record<string, string[]>>({});
+} = ({ children, value, onChange }) => {
+  const [internalFilters, setInternalFilters] = useState<Record<string, string[]>>({});
+  
+  // Use controlled value if provided, otherwise fallback to internal state
+  const filters = value !== undefined ? value : internalFilters;
 
-  useEffect(() => {
-    console.log('%c[FilterPanel]%c Active Filters:', 'color: #10b981; font-weight: bold', 'color: inherit', filters);
-    if (onChange) onChange(filters);
-  }, [filters, onChange]);
-
-  const toggleFilter = (group: string, value: string) => {
-    console.log(`%c[FilterPanel]%c Toggling %c${value}%c in group %c${group}`, 'color: #10b981; font-weight: bold', 'color: inherit', 'color: #3b82f6; font-weight: bold', 'color: inherit', 'color: #3b82f6; font-weight: bold');
-    setFilters(prev => {
-      const currentGroup = prev[group] || [];
-      const isRemoving = currentGroup.includes(value);
-      const newGroup = isRemoving
-        ? currentGroup.filter(v => v !== value)
-        : [...currentGroup, value];
+  const toggleFilter = (group: string, val: string) => {
+    console.log(`%c[FilterPanel]%c Toggling %c${val}%c in group %c${group}`, 'color: #10b981; font-weight: bold', 'color: inherit', 'color: #3b82f6; font-weight: bold', 'color: inherit', 'color: #3b82f6; font-weight: bold');
+    
+    const currentGroup = filters[group] || [];
+    const isRemoving = currentGroup.includes(val);
+    const newGroup = isRemoving
+      ? currentGroup.filter(v => v !== val)
+      : [...currentGroup, val];
       
-      if (isRemoving) {
-        console.log(`%c[FilterPanel]%c Removed %c${value}`, 'color: #ef4444; font-weight: bold', 'color: inherit', 'font-weight: bold');
-      } else {
-        console.log(`%c[FilterPanel]%c Added %c${value}`, 'color: #10b981; font-weight: bold', 'color: inherit', 'font-weight: bold');
-      }
-      
-      return { ...prev, [group]: newGroup };
-    });
+    const newFilters = { ...filters, [group]: newGroup };
+    
+    if (value === undefined) setInternalFilters(newFilters);
+    if (onChange) onChange(newFilters);
   };
 
   const clearGroup = (group: string) => {
     console.log(`%c[FilterPanel]%c Clearing group: %c${group}`, 'color: #f59e0b; font-weight: bold', 'color: inherit', 'color: #f59e0b; font-weight: bold');
-    setFilters(prev => {
-      const { [group]: _, ...rest } = prev;
-      return rest;
-    });
+    const { [group]: _, ...rest } = filters;
+    if (value === undefined) setInternalFilters(rest);
+    if (onChange) onChange(rest);
   };
 
-  const clearAll = () => setFilters({});
+  const clearAll = () => {
+    if (value === undefined) setInternalFilters({});
+    if (onChange) onChange({});
+  };
 
   return (
     <FilterContext.Provider value={{ filters, toggleFilter, clearGroup, clearAll }}>

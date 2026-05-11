@@ -1,36 +1,15 @@
-import React, { useEffect, useRef, useMemo, useCallback, useReducer, Profiler, useState } from 'react';
+import React, { useEffect, useRef, useMemo, useCallback, Profiler } from 'react';
 import { Tag, Avatar, Modal, Form, Input, Select, Button, Space, Typography, App } from 'antd';
 import { UserOutlined, EditOutlined, DeleteOutlined, DownloadOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons';
 import { api } from '../../services/api';
 import AgGridTable, { AgGridTableHandle } from '../../components/common/AgGridTable';
-import { useDebounce, useFetch, useLocalStorage } from '../../hooks';
+import { useDebounce, useFetch } from '../../hooks';
 import { FilterPanel } from '../../components/patterns/FilterPanel';
 import { Candidate } from '../../types';
 import { ColDef } from 'ag-grid-community';
+import { useCandidateStore } from '../../store/candidateStore';
 
-const { Title, Text } = Typography;
-
-// useReducer for complex state
-type State = {
-  isModalVisible: boolean;
-  editingCandidate: Candidate | null;
-};
-
-type Action = 
-  | { type: 'OPEN_MODAL'; payload?: Candidate }
-  | { type: 'CLOSE_MODAL' };
-
-const reducer = (state: State, action: Action): State => {
-  console.log(`%c [useReducer] Action: ${action.type} `, 'background: #7c3aed; color: white; padding: 2px 4px; border-radius: 4px;');
-  switch (action.type) {
-    case 'OPEN_MODAL':
-      return { ...state, isModalVisible: true, editingCandidate: action.payload || null };
-    case 'CLOSE_MODAL':
-      return { ...state, isModalVisible: false, editingCandidate: null };
-    default:
-      return state;
-  }
-};
+const { Title } = Typography;
 
 const Candidates: React.FC = () => {
   console.log('%c [Candidates] Rendering Component ', 'background: #2563eb; color: white; padding: 2px 4px; border-radius: 4px;');
@@ -38,22 +17,15 @@ const Candidates: React.FC = () => {
   const [form] = Form.useForm();
   const gridRef = useRef<AgGridTableHandle>(null);
   
-  // 1. useReducer
-  const [state, dispatch] = useReducer(reducer, {
-    isModalVisible: false,
-    editingCandidate: null
-  });
-
-  // Log when state changes
-  useEffect(() => {
-    console.log('%c [useReducer] State updated: ', 'color: #7c3aed', state);
-  }, [state]);
-
-  // 2. useLocalStorage for search persistence
-  const [searchTerm, setSearchTerm] = useLocalStorage<string>('candidates_search', '');
-  const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({});
+  // 1. Zustand Store Selectors
+  const isModalVisible = useCandidateStore(state => state.isModalVisible);
+  const editingCandidate = useCandidateStore(state => state.editingCandidate);
+  const searchTerm = useCandidateStore(state => state.searchTerm);
+  const activeFilters = useCandidateStore(state => state.activeFilters);
   
-  // 3. useDebounce
+  const { openModal, closeModal, setSearchTerm, setFilters } = useCandidateStore();
+
+  // 2. useDebounce
   const debouncedSearch = useDebounce<string>(searchTerm, 300);
 
   // Convert active filters to query string
@@ -65,7 +37,7 @@ const Candidates: React.FC = () => {
     return params.toString();
   }, [debouncedSearch, activeFilters]);
 
-  // 4. useFetch with full filter parameters
+  // 3. useFetch with full filter parameters
   const { data, loading, error, refetch } = useFetch<Candidate[]>(`http://localhost:5000/api/candidates?${filterParams}`);
 
   useEffect(() => {
@@ -74,13 +46,13 @@ const Candidates: React.FC = () => {
 
   const showAddModal = () => {
     form.resetFields();
-    dispatch({ type: 'OPEN_MODAL' });
+    openModal();
   };
 
   const showEditModal = useCallback((record: Candidate) => {
     form.setFieldsValue(record);
-    dispatch({ type: 'OPEN_MODAL', payload: record });
-  }, [form]);
+    openModal(record);
+  }, [form, openModal]);
 
   const handleDelete = useCallback((id: string) => {
     modal.confirm({
@@ -98,18 +70,18 @@ const Candidates: React.FC = () => {
         }
       },
     });
-  }, [refetch]);
+  }, [refetch, modal, message]);
 
   const onFinish = async (values: any) => {
     try {
-      if (state.editingCandidate) {
-        await api.put(`/candidates/${state.editingCandidate._id}`, values);
+      if (editingCandidate) {
+        await api.put(`/candidates/${editingCandidate._id}`, values);
         message.success("Candidate updated");
       } else {
         await api.post('/candidates', values);
         message.success("Candidate added");
       }
-      dispatch({ type: 'CLOSE_MODAL' });
+      closeModal();
       refetch();
     } catch (error) {
       message.error("Operation failed");
@@ -120,19 +92,17 @@ const Candidates: React.FC = () => {
     gridRef.current?.exportData('candidates_report.csv');
   }, []);
 
-  // 5. useMemo for local filtering
+  // 4. useMemo for local filtering (client-side backup)
   const filteredCandidates = useMemo(() => {
     if (!data) return [];
     console.time('Filtering Candidates');
     const q = searchTerm.toLowerCase();
     
     const filtered = data.filter(c => {
-      // Search matching
       const matchesSearch = (c.name || '').toLowerCase().includes(q) ||
                             (c.email || '').toLowerCase().includes(q) ||
                             (c.role || '').toLowerCase().includes(q);
       
-      // Filter matching (Compound logic)
       const matchesStatus = !activeFilters.status?.length || activeFilters.status.includes(c.status);
       const matchesExperience = !activeFilters.experience?.length || activeFilters.experience.some(exp => (c.experience || '').includes(exp));
 
@@ -143,7 +113,7 @@ const Candidates: React.FC = () => {
     return filtered;
   }, [data, searchTerm, activeFilters]);
 
-  // 6. useMemo for expensive column definitions
+  // 5. useMemo for expensive column definitions
   const columnDefs = useMemo<ColDef[]>(() => [
     {
       field: 'name',
@@ -195,9 +165,9 @@ const Candidates: React.FC = () => {
       }
     }}>
       <div className="p-6 space-y-6 animate-in slide-in-from-bottom-2 duration-500">
-        <div className="flex justify-between items-center">
-          <Title level={3} className="m-0 dark:text-white">Candidate Pipeline [SEARCH UPDATED]</Title>
-          <Space>
+        <div className="flex justify-between items-center flex-wrap gap-4">
+          <Title level={3} className="m-0 dark:text-white whitespace-nowrap">Candidate Pipeline [ZUSTAND REFACTOR]</Title>
+          <Space className="flex-wrap">
             <Input 
               placeholder="Search candidates..." 
               prefix={<SearchOutlined />} 
@@ -215,7 +185,7 @@ const Candidates: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-1">
-            <FilterPanel onChange={setActiveFilters}>
+            <FilterPanel value={activeFilters} onChange={setFilters}>
               <FilterPanel.Group name="status" title="Status">
                 <FilterPanel.Item group="status" value="Hired">Hired</FilterPanel.Item>
                 <FilterPanel.Item group="status" value="In Review">In Review</FilterPanel.Item>
@@ -247,9 +217,9 @@ const Candidates: React.FC = () => {
         </div>
 
         <Modal
-          title={<span className="text-xl font-bold">{state.editingCandidate ? "Edit Candidate" : "New Candidate"}</span>}
-          open={state.isModalVisible}
-          onCancel={() => dispatch({ type: 'CLOSE_MODAL' })}
+          title={<span className="text-xl font-bold">{editingCandidate ? "Edit Candidate" : "New Candidate"}</span>}
+          open={isModalVisible}
+          onCancel={closeModal}
           onOk={() => form.submit()}
           okText="Save Candidate"
           className="rounded-2xl"
