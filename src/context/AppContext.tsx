@@ -23,25 +23,32 @@ type AppAction =
   | { type: 'TOGGLE_THEME' };
 
 const getInitialState = (): AppState => {
+  let user = null;
+  let isAuthenticated = false;
+  
   try {
     const savedUser = localStorage.getItem('auth_user');
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
-    return {
-      user: savedUser ? JSON.parse(savedUser) : null,
-      isAuthenticated: !!savedUser,
-      theme: savedTheme || 'light',
-      isLoading: false,
-      error: null,
-    };
-  } catch {
-    return {
-      user: null,
-      isAuthenticated: false,
-      theme: 'light',
-      isLoading: false,
-      error: null,
-    };
+    
+    // Safely check if savedUser exists and is not a corrupted string
+    if (savedUser && savedUser !== 'undefined' && savedUser !== 'null') {
+      user = JSON.parse(savedUser);
+      isAuthenticated = true;
+    } else if (savedUser === 'undefined' || savedUser === 'null') {
+      // Clear corrupt data
+      localStorage.removeItem('auth_user');
+    }
+  } catch (error) {
+    console.error("Failed to parse auth_user from localStorage", error);
+    localStorage.removeItem('auth_user');
   }
+
+  return {
+    user,
+    isAuthenticated,
+    theme: (localStorage.getItem('theme') as 'light' | 'dark') || 'light',
+    isLoading: false,
+    error: null,
+  };
 };
 
 const initialState: AppState = getInitialState();
