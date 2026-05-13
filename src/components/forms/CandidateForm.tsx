@@ -53,33 +53,25 @@ export const CandidateForm: React.FC<CandidateFormProps> = ({ initialValues, can
   const handleFormSubmit = async (data: CandidateFormValues) => {
     console.log("FORM DATA:", data);
 
-    const emailAlreadyExists = candidates.some(
-      (candidate) => candidate.email === data.email && candidate._id !== initialValues?._id
-    );
-
-    if (emailAlreadyExists) {
-      console.log("SERVER ERROR: Email already exists");
-
-      setError("email", {
-        type: "server",
-        message: "This email already exists",
-      });
-
-      return;
-    }
-
-    console.log("SUCCESS:", data);
-
     setIsSubmitting(true);
     try {
       // Submit
       await onSubmit(data);
     } catch (error: any) {
       // Server Error Mapping
-      setError('root.serverError', {
-        type: 'server',
-        message: error?.response?.data?.message || error.message || 'An unexpected server error occurred',
-      });
+      const errorMessage = error?.response?.data?.message || error.message || 'An unexpected server error occurred';
+      
+      if (errorMessage === 'This email already exists') {
+         setError('email', {
+            type: 'server',
+            message: errorMessage,
+         });
+      } else {
+         setError('root.serverError', {
+            type: 'server',
+            message: errorMessage,
+         });
+      }
     } finally {
       setIsSubmitting(false);
     }
