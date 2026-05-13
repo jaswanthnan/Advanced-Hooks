@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useMemo, useCallback, Profiler } from 'react';
-import { Tag, Avatar, Modal, Form, Input, Select, Button, Space, Typography, App } from 'antd';
+import React, { useEffect, useRef, useMemo, useCallback, Profiler, lazy } from 'react';
+import { Tag, Avatar, Modal, Input, Button, Space, Typography, App } from 'antd';
 import { UserOutlined, EditOutlined, DeleteOutlined, DownloadOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons';
 import { api } from '../../services/api';
 import AgGridTable, { AgGridTableHandle } from '../../components/common/AgGridTable';
@@ -8,13 +8,16 @@ import { FilterPanel } from '../../components/patterns/FilterPanel';
 import { Candidate } from '../../types';
 import { ColDef } from 'ag-grid-community';
 import { useCandidateStore } from '../../store/candidateStore';
+import { FormErrorBoundary } from '../../components/common/FormErrorBoundary';
+import { CandidateFormValues } from '../../schemas/candidateSchema';
+
+const CandidateForm = lazy(() => import('../../components/forms/CandidateForm').then(module => ({ default: module.CandidateForm })));
 
 const { Title } = Typography;
 
 const Candidates: React.FC = () => {
   console.log('%c [Candidates] Rendering Component ', 'background: #2563eb; color: white; padding: 2px 4px; border-radius: 4px;');
   const { message, modal } = App.useApp();
-  const [form] = Form.useForm();
   const gridRef = useRef<AgGridTableHandle>(null);
   
   // 1. Zustand Store Selectors
@@ -45,14 +48,12 @@ const Candidates: React.FC = () => {
   }, [error]);
 
   const showAddModal = () => {
-    form.resetFields();
     openModal();
   };
 
   const showEditModal = useCallback((record: Candidate) => {
-    form.setFieldsValue(record);
     openModal(record);
-  }, [form, openModal]);
+  }, [openModal]);
 
   const handleDelete = useCallback((id: string) => {
     modal.confirm({
@@ -72,19 +73,26 @@ const Candidates: React.FC = () => {
     });
   }, [refetch, modal, message]);
 
-  const onFinish = async (values: any) => {
+  const onFinish = async (values: CandidateFormValues) => {
     try {
+      // Data shaping for the API
+      const apiData = {
+        ...values,
+        skills: values.skills?.map(s => s.name).filter(Boolean) || []
+      };
+
       if (editingCandidate) {
-        await api.put(`/candidates/${editingCandidate._id}`, values);
+        await api.put(`/candidates/${editingCandidate._id}`, apiData);
         message.success("Candidate updated");
       } else {
-        await api.post('/candidates', values);
+        await api.post('/candidates', apiData);
         message.success("Candidate added");
       }
       closeModal();
       refetch();
-    } catch (error) {
-      message.error("Operation failed");
+    } catch (error: any) {
+      console.error("API Error", error);
+      throw error; // Rethrow so react-hook-form can map the server error
     }
   };
 
@@ -144,6 +152,24 @@ const Candidates: React.FC = () => {
       cellRenderer: (params: any) => {
         const colors: Record<string, string> = { Hired: 'success', Pending: 'processing', Rejected: 'error', 'In Review': 'warning' };
         return <Tag color={colors[params.value] || 'default'} className="rounded-full px-3">{params.value}</Tag>;
+      }
+    },
+    { 
+      field: 'skills', 
+      headerName: 'Skills',
+      flex: 1.5,
+      cellRenderer: (params: any) => {
+        const skills = params.value || [];
+        if (!skills.length) return <span className="text-slate-400">-</span>;
+        return (
+          <div className="flex flex-wrap gap-1 py-1">
+            {skills.map((skill: string, idx: number) => (
+              <Tag key={idx} className="m-0 border-slate-200 text-slate-600 bg-slate-50 text-xs">
+                {skill}
+              </Tag>
+            ))}
+          </div>
+        );
       }
     },
     {
@@ -220,33 +246,20 @@ const Candidates: React.FC = () => {
           title={<span className="text-xl font-bold">{editingCandidate ? "Edit Candidate" : "New Candidate"}</span>}
           open={isModalVisible}
           onCancel={closeModal}
-          onOk={() => form.submit()}
-          okText="Save Candidate"
+          footer={null}
           className="rounded-2xl"
           destroyOnHidden
         >
-          <Form form={form} layout="vertical" onFinish={onFinish} className="mt-6" requiredMark={false}>
-            <Form.Item name="name" label={<span>Full Name <span className="text-rose-500">*</span></span>} rules={[{ required: true }]}>
-              <Input placeholder="John Smith" size="large" className="rounded-xl" />
-            </Form.Item>
-            <Form.Item name="email" label={<span>Email Address <span className="text-rose-500">*</span></span>} rules={[{ required: true, type: 'email' }]}>
-              <Input placeholder="john@example.com" size="large" className="rounded-xl" />
-            </Form.Item>
-            <Form.Item name="role" label={<span>Position <span className="text-rose-500">*</span></span>} rules={[{ required: true }]}>
-              <Input placeholder="Senior UI Designer" size="large" className="rounded-xl" />
-            </Form.Item>
-            <Form.Item name="experience" label={<span>Years of Experience <span className="text-rose-500">*</span></span>} rules={[{ required: true }]}>
-              <Input placeholder="e.g. 5 Years" size="large" className="rounded-xl" />
-            </Form.Item>
-            <Form.Item name="status" label={<span>Current Status <span className="text-rose-500">*</span></span>} rules={[{ required: true }]}>
-              <Select placeholder="Select status" size="large" className="rounded-xl">
-                <Select.Option value="Pending">Pending</Select.Option>
-                <Select.Option value="In Review">In Review</Select.Option>
-                <Select.Option value="Hired">Hired</Select.Option>
-                <Select.Option value="Rejected">Rejected</Select.Option>
-              </Select>
-            </Form.Item>
-          </Form>
+          <div className="mt-6">
+            <FormErrorBoundary>
+              <CandidateForm 
+                initialValues={editingCandidate} 
+                candidates={data || []}
+                onSubmit={onFinish} 
+                onCancel={closeModal} 
+              />
+            </FormErrorBoundary>
+          </div>
         </Modal>
       </div>
     </Profiler>

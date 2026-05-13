@@ -78,19 +78,21 @@ const AppLayout = () => {
         collapsedWidth="0" 
         width={260} 
         theme={isDarkMode ? 'dark' : 'light'} 
-        className="border-r border-slate-200 dark:border-slate-800 shadow-xl"
+        className="border-r border-slate-200 dark:border-slate-800 shadow-xl fixed h-screen left-0 top-0 bottom-0"
         style={{ zIndex: 1001 }}
       >
-        <Menu 
-          theme={isDarkMode ? 'dark' : 'light'} 
-          mode="inline" 
-          selectedKeys={[location.pathname]} 
-          items={menuItems} 
-          className="border-0 px-2"
-        />
+        <div className="h-full overflow-y-auto overflow-x-hidden">
+          <Menu 
+            theme={isDarkMode ? 'dark' : 'light'} 
+            mode="inline" 
+            selectedKeys={[location.pathname]} 
+            items={menuItems} 
+            className="border-0 px-2 py-4"
+          />
+        </div>
       </Sider>
 
-      <AntLayout className="bg-transparent">
+      <AntLayout className="bg-transparent lg:ml-[260px] transition-all duration-300">
         <Header className={`${isDarkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-100'} px-6 flex justify-between items-center sticky top-0 z-10 backdrop-blur-md border-b h-16`}>
           <div className="flex items-center gap-2">
             <h2 className="text-sm font-bold dark:text-white m-0 tracking-wide">

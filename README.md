@@ -1,39 +1,40 @@
 # 🚀 AI-Powered Recruitment CRM
 
-A professional, high-performance Recruitment Dashboard built with the MERN stack (MongoDB, Express, React, Node.js), featuring advanced React patterns, real-time filtering, and local state persistence.
+A professional, high-performance Recruitment Dashboard built with the MERN stack (MongoDB, Express, React, Node.js), featuring advanced React patterns, end-to-end type safety, real-time filtering, and global state management.
 
 ## 🌟 Key Features
 
+- **Type-Safe Forms**: Built with React Hook Form and Zod schemas, offering end-to-end type safety, field arrays (e.g. dynamic skills), and async validation capabilities.
+- **Robust Error Handling**: Implements `react-error-boundary` alongside custom class-based boundaries to catch component-level errors seamlessly, combined with `React.lazy` and `Suspense` fallbacks.
+- **Predictable State Management**: Utilizes `Zustand` for complex, highly performant global state architecture, replacing prop-drilling and generic context providers.
 - **Advanced Candidate Search**: Optimized server-side filtering using MongoDB regex combined with frontend `useDebounce` and `useMemo` for instant feedback.
 - **Persistent Data Grids**: Integrated AG Grid with custom `localStorage` logic to remember your column arrangements, widths, and visibility.
 - **Performance Monitoring**: Built-in React Profiler to track rendering efficiency and identify bottlenecks.
-- **Predictable State Management**: Utilizes `useReducer` for complex state transitions like candidate editing and job posting.
-- **Premium UI/UX**: Crafted with Ant Design (v5), featuring glassmorphism, smooth animations, and a sleek dark-mode compatible design system.
-- **AI-Powered Insights**: (In Progress) Intelligent candidate summarization and scoring using Groq (Llama 3.1).
+- **Premium UI/UX**: Crafted with Ant Design (v5) and TailwindCSS, featuring glassmorphism, smooth animations, and a sleek dark-mode compatible design system.
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **React + Vite**: Fast, modern frontend framework.
-- **TypeScript**: Type-safe development environment.
+- **React 18 + Vite**: Fast, modern frontend framework utilizing `Suspense` and `React.lazy()`.
+- **TypeScript**: Strict type-safe development environment.
+- **React Hook Form + Zod**: High-performance, flexible, and extensible forms with robust schema validation.
+- **Zustand**: Small, fast, and scalable bear-bones state-management.
 - **AG Grid Community**: Professional data grid for complex data handling.
-- **Ant Design**: Comprehensive UI library for enterprise applications.
-- **Recharts**: Dynamic data visualization for dashboard statistics.
+- **Ant Design & Tailwind CSS**: Comprehensive UI library paired with a utility-first CSS framework for enterprise applications.
 
 ### Backend
-- **Node.js & Express**: Robust and scalable API layer.
+- **Node.js & Express**: Robust and scalable REST API layer.
 - **MongoDB & Mongoose**: Flexible document-based data storage.
 - **tsx**: Modern TypeScript execution for the server.
-- **dotenv & CORS**: Secure environment and cross-origin management.
 
 ## 🏗️ Advanced React Patterns Implemented
 
+- **React Hook Form + Zod Validation**: Sync/Async form validation seamlessly mapping server errors back to specific form fields.
+- **Error Boundaries & Suspense**: Prevents application crashes and displays elegant skeleton/spinner fallbacks while lazily downloading bundles.
+- **Compound Components**: Highly modular architectural patterns implemented for `Tabs` and `FilterPanel`.
 - **`useDebounce`**: Optimizes search fields by delaying API calls until typing stops.
-- **`useLocalStorage`**: Automatically persists search terms and grid configurations.
 - **`useFetch`**: Custom hook for API calls with built-in `AbortController` to prevent memory leaks.
-- **`useIntersectionObserver`**: Enables lazy loading and scroll-based animations.
-- **`React.memo` & `useCallback`**: Prevents unnecessary re-renders in heavy components like `JobCard`.
-- **`Profiler`**: Diagnostic logs for monitoring component performance thresholds.
+- **`React.memo` & `useCallback`**: Prevents unnecessary re-renders in heavy components.
 
 ## 📂 Project Structure
 
@@ -43,9 +44,14 @@ A professional, high-performance Recruitment Dashboard built with the MERN stack
 │   └── server.ts     # Express server & API routes
 ├── src/
 │   ├── components/   # Reusable UI & Layout components
+│   │   ├── common/   # Global shared components (Error Boundaries, Tables)
+│   │   ├── forms/    # React Hook Form configurations
+│   │   └── patterns/ # Advanced architectural pattern components
 │   ├── hooks/        # Custom React hooks (Debounce, Fetch, etc.)
 │   ├── pages/        # Main views (Dashboard, Candidates, Jobs)
+│   ├── schemas/      # Zod validation schemas
 │   ├── services/     # API interaction layer
+│   ├── store/        # Zustand global state definitions
 │   └── types/        # TypeScript interfaces
 ├── start-all.bat     # One-click start for Dev environment
 └── package.json      # Project dependencies & scripts
@@ -75,11 +81,11 @@ Alternatively:
 - **Start Backend**: `npm run server`
 - **Start Frontend**: `npm run dev`
 
-## 📊 Performance Verification
+## 📊 Diagnostic Outputs
 Check the browser console to see the system in action:
-- `[useReducer] Action: ...` → Tracks every state change.
-- `[Profiler] ... duration: ...` → Shows render performance.
-- `Filtering Candidates: ...ms` → Performance timing for `useMemo`.
+- `FORM DATA: ...` → Detailed outputs of validated Zod schema form data payloads.
+- `[Candidates] Rendering Component` → Verifies React functional component re-renders.
+- `[Profiler] ... duration: ...` → Shows render performance metrics.
 
 ---
 Developed as a high-performance Recruitment solution.

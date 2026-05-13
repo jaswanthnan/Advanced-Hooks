@@ -6,6 +6,7 @@ export interface ICandidate extends Document {
   role: string;
   experience: string;
   status: 'In Review' | 'Hired' | 'Pending' | 'Rejected';
+  skills?: string[];
   createdAt: Date;
 }
 
@@ -14,11 +15,12 @@ const candidateSchema: Schema = new Schema({
   email: { type: String, required: true },
   role: { type: String, required: true },
   experience: { type: String, required: true },
-  status: { 
-    type: String, 
+  status: {
+    type: String,
     required: true,
-    enum: ['In Review', 'Hired', 'Pending', 'Rejected'] 
+    enum: ['In Review', 'Hired', 'Pending', 'Rejected']
   },
+  skills: { type: [String] },
   createdAt: { type: Date, default: Date.now }
 });
 

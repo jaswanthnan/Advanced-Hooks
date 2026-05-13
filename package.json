@@ -11,6 +11,7 @@
     "server": "tsx backend/server.ts"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
     "ag-grid-community": "^31.3.1",
     "ag-grid-react": "^31.3.1",
     "antd": "^5.16.1",
@@ -22,8 +23,11 @@
     "mongoose": "^8.3.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-error-boundary": "^6.1.1",
+    "react-hook-form": "^7.75.0",
     "react-router-dom": "^6.22.3",
     "recharts": "^2.12.5",
+    "zod": "^4.4.3",
     "zustand": "^5.0.13"
   },
   "devDependencies": {

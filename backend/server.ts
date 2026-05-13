@@ -114,19 +114,35 @@ app.get('/api/candidates', async (req: Request, res: Response) => {
 
 app.post('/api/candidates', async (req: Request, res: Response) => {
   try {
+    const existing = await Candidate.findOne({ email: req.body.email });
+    if (existing) {
+      return res.status(400).json({ message: 'This email already exists' });
+    }
+
     const newCandidate = new Candidate(req.body);
     const savedCandidate = await newCandidate.save();
     res.status(201).json(savedCandidate);
   } catch (error: any) {
+    if (error.code === 11000) {
+      return res.status(400).json({ message: 'This email already exists' });
+    }
     res.status(400).json({ message: error.message });
   }
 });
 
 app.put('/api/candidates/:id', async (req: Request, res: Response) => {
   try {
-    const updatedCandidate = await Candidate.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const existing = await Candidate.findOne({ email: req.body.email, _id: { $ne: req.params.id } });
+    if (existing) {
+      return res.status(400).json({ message: 'This email already exists' });
+    }
+
+    const updatedCandidate = await Candidate.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
     res.json(updatedCandidate);
   } catch (error: any) {
+    if (error.code === 11000) {
+      return res.status(400).json({ message: 'This email already exists' });
+    }
     res.status(400).json({ message: error.message });
   }
 });
